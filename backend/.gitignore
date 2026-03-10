@@ -1,0 +1,30 @@
+# ── Python virtual environment ────────────────────────────
+.venv/
+.venv*/
+venv/
+env/
+
+# ── Python cache ──────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+*.egg
+.eggs/
+
+# ── Environment / secrets ─────────────────────────────────
+.env
+.env.*
+!.env.example
+
+# ── GeoIP databases ───────────────────────────────────────
+*.mmdb
+
+# ── Logs ──────────────────────────────────────────────────
+*.log
+logs/
+
+# ── OS ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
