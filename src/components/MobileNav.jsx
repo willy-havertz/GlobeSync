@@ -26,7 +26,11 @@ const NAV_ITEMS = [
   },
 ];
 
-export default function MobileNav({ onOpenAbout, onOpenSettings, onOpenPlayback }) {
+export default function MobileNav({
+  onOpenAbout,
+  onOpenSettings,
+  onOpenPlayback,
+}) {
   const [open, setOpen] = useState(false);
 
   const scrollTo = (id) => {
@@ -200,13 +204,20 @@ export default function MobileNav({ onOpenAbout, onOpenSettings, onOpenPlayback 
                         transition: "all 0.18s ease",
                       }}
                       onTouchStart={(e) => {
-                        e.currentTarget.style.background = "rgba(255,136,0,0.18)";
+                        e.currentTarget.style.background =
+                          "rgba(255,136,0,0.18)";
                       }}
                       onTouchEnd={(e) => {
-                        e.currentTarget.style.background = "rgba(255,136,0,0.08)";
+                        e.currentTarget.style.background =
+                          "rgba(255,136,0,0.08)";
                       }}
                     >
-                      <span className="text-lg shrink-0" style={{ color: "#ff8800" }}>⏪</span>
+                      <span
+                        className="text-lg shrink-0"
+                        style={{ color: "#ff8800" }}
+                      >
+                        ⏪
+                      </span>
                       <div className="min-w-0 flex-1">
                         <div
                           className="font-['Orbitron'] text-[0.68rem] font-bold tracking-widest"
@@ -214,11 +225,19 @@ export default function MobileNav({ onOpenAbout, onOpenSettings, onOpenPlayback 
                         >
                           REWIND
                         </div>
-                        <div className="text-[0.58rem] mt-0.5" style={{ color: "rgba(255,136,0,0.6)" }}>
+                        <div
+                          className="text-[0.58rem] mt-0.5"
+                          style={{ color: "rgba(255,136,0,0.6)" }}
+                        >
                           Historical attack playback
                         </div>
                       </div>
-                      <span className="text-base shrink-0 font-bold" style={{ color: "#ff8800" }}>›</span>
+                      <span
+                        className="text-base shrink-0 font-bold"
+                        style={{ color: "#ff8800" }}
+                      >
+                        ›
+                      </span>
                     </motion.button>
 
                     <motion.button

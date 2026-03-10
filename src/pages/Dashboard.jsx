@@ -90,10 +90,19 @@ export default function Dashboard() {
   }, []);
 
   const {
-    isPlaybackMode, isPlaying, events: pbEvents, index: pbIndex,
-    speed: pbSpeed, loading: pbLoading, error: pbError,
-    openPlayback: _openPlayback, closePlayback, play: pbPlay, pause: pbPause,
-    seek: pbSeek, setSpeed: pbSetSpeed,
+    isPlaybackMode,
+    isPlaying,
+    events: pbEvents,
+    index: pbIndex,
+    speed: pbSpeed,
+    loading: pbLoading,
+    error: pbError,
+    openPlayback: _openPlayback,
+    closePlayback,
+    play: pbPlay,
+    pause: pbPause,
+    seek: pbSeek,
+    setSpeed: pbSetSpeed,
   } = usePlayback({ onReplay: handleReplay });
 
   const startPlayback = useCallback(() => {
@@ -301,7 +310,10 @@ export default function Dashboard() {
 
       <motion.div
         className="flex flex-col min-h-screen lg:h-screen px-2 pb-6 lg:p-2 gap-2 lg:overflow-hidden overflow-x-hidden"
-        style={{ background: theme.bg, paddingBottom: isPlaybackMode ? "9rem" : undefined }}
+        style={{
+          background: theme.bg,
+          paddingBottom: isPlaybackMode ? "9rem" : undefined,
+        }}
         variants={container}
         initial="hidden"
         animate={booted ? "show" : "hidden"}
@@ -359,13 +371,23 @@ export default function Dashboard() {
               onClick={startPlayback}
               className="flex items-center gap-2 px-3 py-1.5 rounded font-['Orbitron'] text-[0.58rem] tracking-[2px] font-bold cursor-pointer glass hud-corners"
               style={{
-                background: isPlaybackMode ? "rgba(255,136,0,0.18)" : "rgba(255,136,0,0.07)",
+                background: isPlaybackMode
+                  ? "rgba(255,136,0,0.18)"
+                  : "rgba(255,136,0,0.07)",
                 border: `1px solid ${isPlaybackMode ? "rgba(255,136,0,0.7)" : "rgba(255,136,0,0.3)"}`,
                 color: "#ff8800",
                 transition: "all 0.18s ease",
               }}
-              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,136,0,0.18)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
-              onMouseLeave={(e) => { e.currentTarget.style.background = isPlaybackMode ? "rgba(255,136,0,0.18)" : "rgba(255,136,0,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(255,136,0,0.18)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = isPlaybackMode
+                  ? "rgba(255,136,0,0.18)"
+                  : "rgba(255,136,0,0.07)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
             >
               ⏪ REWIND
             </button>
@@ -500,14 +522,18 @@ export default function Dashboard() {
             <div className="flex flex-col glass anim-flicker h-full overflow-hidden cyber-grid hud-corners">
               <div className="panel-title">
                 <span className="dot" />
-                <span>{isPlaybackMode ? "GLOBAL ATTACK MAP — PLAYBACK" : "GLOBAL ATTACK MAP — LIVE"}</span>
+                <span>
+                  {isPlaybackMode
+                    ? "GLOBAL ATTACK MAP — PLAYBACK"
+                    : "GLOBAL ATTACK MAP — LIVE"}
+                </span>
                 <span
                   className={`ml-auto text-[0.48rem] tracking-widest ${
                     isPlaybackMode
                       ? "text-orange-400 anim-blink"
                       : connected
-                      ? "text-green-400 anim-blink"
-                      : "text-yellow-500 anim-blink"
+                        ? "text-green-400 anim-blink"
+                        : "text-yellow-500 anim-blink"
                   }`}
                 >
                   {isPlaybackMode
@@ -587,12 +613,15 @@ export default function Dashboard() {
           variants={panelAnim}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_210px] gap-2 shrink-0 lg:h-44"
         >
-          <div id="section-threat-activity" className="h-72 lg:h-full">
+          <div
+            id="section-threat-activity"
+            className="flex flex-col h-72 lg:h-full"
+          >
             <Suspense fallback={<div className="w-full h-full" />}>
               <ThreatAreaChart data={chartData} />
             </Suspense>
           </div>
-          <div id="section-stats" className="h-72 lg:h-full">
+          <div id="section-stats" className="flex flex-col h-72 lg:h-full">
             <Suspense fallback={<div className="w-full h-full" />}>
               <AttackBarChart data={barData} />
             </Suspense>

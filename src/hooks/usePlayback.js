@@ -41,10 +41,18 @@ export function usePlayback({ onReplay }) {
   const speedRef = useRef(1);
   const onReplayRef = useRef(onReplay);
 
-  useEffect(() => { onReplayRef.current = onReplay; }, [onReplay]);
-  useEffect(() => { eventsRef.current = events; }, [events]);
-  useEffect(() => { speedRef.current = speed; }, [speed]);
-  useEffect(() => { indexRef.current = index; }, [index]);
+  useEffect(() => {
+    onReplayRef.current = onReplay;
+  }, [onReplay]);
+  useEffect(() => {
+    eventsRef.current = events;
+  }, [events]);
+  useEffect(() => {
+    speedRef.current = speed;
+  }, [speed]);
+  useEffect(() => {
+    indexRef.current = index;
+  }, [index]);
 
   /* ── clear timer ── */
   const clearTimer = useCallback(() => {
@@ -57,18 +65,21 @@ export function usePlayback({ onReplay }) {
   /* ── start timer ── */
   const startTimer = useCallback(() => {
     clearTimer();
-    timerRef.current = setInterval(() => {
-      const next = indexRef.current + 1;
-      if (next >= eventsRef.current.length) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-        setIsPlaying(false);
-        return;
-      }
-      indexRef.current = next;
-      setIndex(next);
-      onReplayRef.current(eventsRef.current[next]);
-    }, Math.round(BASE_INTERVAL_MS / speedRef.current));
+    timerRef.current = setInterval(
+      () => {
+        const next = indexRef.current + 1;
+        if (next >= eventsRef.current.length) {
+          clearInterval(timerRef.current);
+          timerRef.current = null;
+          setIsPlaying(false);
+          return;
+        }
+        indexRef.current = next;
+        setIndex(next);
+        onReplayRef.current(eventsRef.current[next]);
+      },
+      Math.round(BASE_INTERVAL_MS / speedRef.current),
+    );
   }, [clearTimer]);
 
   /* ── open / fetch ── */
@@ -83,7 +94,10 @@ export function usePlayback({ onReplay }) {
       const res = await fetch(HISTORY_URL);
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = await res.json();
-      if (!data.length) throw new Error("No historical events stored yet — wait for the live feed to collect more data.");
+      if (!data.length)
+        throw new Error(
+          "No historical events stored yet — wait for the live feed to collect more data.",
+        );
       setEvents(data);
       eventsRef.current = data;
       // seed the first event
@@ -135,12 +149,15 @@ export function usePlayback({ onReplay }) {
   }, []);
 
   /* ── setSpeed ── */
-  const changeSpeed = useCallback((s) => {
-    setSpeed(s);
-    speedRef.current = s;
-    // restart timer if playing
-    if (timerRef.current) startTimer();
-  }, [startTimer]);
+  const changeSpeed = useCallback(
+    (s) => {
+      setSpeed(s);
+      speedRef.current = s;
+      // restart timer if playing
+      if (timerRef.current) startTimer();
+    },
+    [startTimer],
+  );
 
   /* cleanup on unmount */
   useEffect(() => () => clearTimer(), [clearTimer]);

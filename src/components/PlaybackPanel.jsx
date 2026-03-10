@@ -20,7 +20,10 @@ function fmt(ts) {
 function fmtDate(ts) {
   if (!ts) return "";
   try {
-    return new Date(ts * 1000).toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    return new Date(ts * 1000).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
   } catch {
     return "";
   }
@@ -75,21 +78,53 @@ export default function PlaybackPanel({
           }}
         >
           {/* ── Top accent line ── */}
-          <div style={{ height: 2, background: "linear-gradient(90deg, transparent, var(--hud), transparent)" }} />
+          <div
+            style={{
+              height: 2,
+              background:
+                "linear-gradient(90deg, transparent, var(--hud), transparent)",
+            }}
+          />
 
-          <div style={{ padding: "10px 16px 12px", display: "flex", flexDirection: "column", gap: 8 }}>
-
+          <div
+            style={{
+              padding: "10px 16px 12px",
+              display: "flex",
+              flexDirection: "column",
+              gap: 8,
+            }}
+          >
             {/* ── Row 1: Title + event info + close ── */}
             <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
               {/* Title */}
-              <div style={{ display: "flex", alignItems: "center", gap: 6, flexShrink: 0 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  flexShrink: 0,
+                }}
+              >
                 <span
                   className="anim-blink"
-                  style={{ width: 7, height: 7, borderRadius: "50%", background: "var(--hud)", boxShadow: "0 0 8px var(--hud)", display: "inline-block" }}
+                  style={{
+                    width: 7,
+                    height: 7,
+                    borderRadius: "50%",
+                    background: "var(--hud)",
+                    boxShadow: "0 0 8px var(--hud)",
+                    display: "inline-block",
+                  }}
                 />
                 <span
                   className="font-['Orbitron']"
-                  style={{ fontSize: "0.58rem", fontWeight: 700, letterSpacing: "3px", color: "var(--hud)", whiteSpace: "nowrap" }}
+                  style={{
+                    fontSize: "0.58rem",
+                    fontWeight: 700,
+                    letterSpacing: "3px",
+                    color: "var(--hud)",
+                    whiteSpace: "nowrap",
+                  }}
                 >
                   HISTORICAL PLAYBACK
                 </span>
@@ -97,38 +132,89 @@ export default function PlaybackPanel({
 
               {/* Error */}
               {error && (
-                <span style={{ fontSize: "0.52rem", color: "#ff6666", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                <span
+                  style={{
+                    fontSize: "0.52rem",
+                    color: "#ff6666",
+                    flex: 1,
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
                   ⚠ {error}
                 </span>
               )}
 
               {/* Current event summary */}
               {!error && current && (
-                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, minWidth: 0, overflow: "hidden" }}>
-                  <span style={{ fontSize: "0.5rem", color: "rgba(255,255,255,0.3)", whiteSpace: "nowrap" }}>
+                <div
+                  style={{
+                    flex: 1,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    minWidth: 0,
+                    overflow: "hidden",
+                  }}
+                >
+                  <span
+                    style={{
+                      fontSize: "0.5rem",
+                      color: "rgba(255,255,255,0.3)",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {fmtDate(current.ts)} {fmt(current.ts)}
                   </span>
                   <span
                     className="font-['Orbitron']"
-                    style={{ fontSize: "0.5rem", fontWeight: 700, color: sevColor, whiteSpace: "nowrap", textShadow: `0 0 8px ${sevColor}88` }}
+                    style={{
+                      fontSize: "0.5rem",
+                      fontWeight: 700,
+                      color: sevColor,
+                      whiteSpace: "nowrap",
+                      textShadow: `0 0 8px ${sevColor}88`,
+                    }}
                   >
                     {current.severity}
                   </span>
-                  <span style={{ fontSize: "0.5rem", color: "rgba(255,255,255,0.45)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                  <span
+                    style={{
+                      fontSize: "0.5rem",
+                      color: "rgba(255,255,255,0.45)",
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
                     {current.type} — {current.ip}
                   </span>
                 </div>
               )}
 
               {loading && (
-                <span style={{ flex: 1, fontSize: "0.52rem", color: "rgba(var(--hud-rgb),0.6)" }}>Loading history…</span>
+                <span
+                  style={{
+                    flex: 1,
+                    fontSize: "0.52rem",
+                    color: "rgba(var(--hud-rgb),0.6)",
+                  }}
+                >
+                  Loading history…
+                </span>
               )}
 
               {/* Event counter */}
               {!error && total > 0 && (
                 <span
                   className="font-['Orbitron']"
-                  style={{ fontSize: "0.5rem", color: "rgba(var(--hud-rgb),0.5)", whiteSpace: "nowrap", flexShrink: 0 }}
+                  style={{
+                    fontSize: "0.5rem",
+                    color: "rgba(var(--hud-rgb),0.5)",
+                    whiteSpace: "nowrap",
+                    flexShrink: 0,
+                  }}
                 >
                   {index + 1} / {total}
                 </span>
@@ -137,9 +223,22 @@ export default function PlaybackPanel({
               {/* Close */}
               <button
                 onClick={closePlayback}
-                style={{ background: "none", border: "none", cursor: "pointer", color: "rgba(var(--hud-rgb),0.5)", fontSize: "0.9rem", lineHeight: 1, padding: "2px 6px", flexShrink: 0 }}
-                onMouseEnter={(e) => { e.currentTarget.style.color = "var(--hud)"; }}
-                onMouseLeave={(e) => { e.currentTarget.style.color = "rgba(var(--hud-rgb),0.5)"; }}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.5)",
+                  fontSize: "0.9rem",
+                  lineHeight: 1,
+                  padding: "2px 6px",
+                  flexShrink: 0,
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.color = "var(--hud)";
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.color = "rgba(var(--hud-rgb),0.5)";
+                }}
                 title="Exit playback"
               >
                 ✕
@@ -147,18 +246,61 @@ export default function PlaybackPanel({
             </div>
 
             {/* ── Row 2: Scrubber ── */}
-            <div style={{ position: "relative", height: 20, display: "flex", alignItems: "center", gap: 8 }}>
+            <div
+              style={{
+                position: "relative",
+                height: 20,
+                display: "flex",
+                alignItems: "center",
+                gap: 8,
+              }}
+            >
               {/* Start time */}
-              <span style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.25)", whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span
+                style={{
+                  fontSize: "0.45rem",
+                  color: "rgba(255,255,255,0.25)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
                 {events[0] ? fmt(events[0].ts) : "--"}
               </span>
 
               {/* Track */}
-              <div style={{ flex: 1, position: "relative", height: 20, display: "flex", alignItems: "center" }}>
+              <div
+                style={{
+                  flex: 1,
+                  position: "relative",
+                  height: 20,
+                  display: "flex",
+                  alignItems: "center",
+                }}
+              >
                 {/* Background track */}
-                <div style={{ position: "absolute", left: 0, right: 0, height: 3, borderRadius: 2, background: "rgba(var(--hud-rgb),0.12)" }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    right: 0,
+                    height: 3,
+                    borderRadius: 2,
+                    background: "rgba(var(--hud-rgb),0.12)",
+                  }}
+                />
                 {/* Filled portion */}
-                <div style={{ position: "absolute", left: 0, width: `${pct * 100}%`, height: 3, borderRadius: 2, background: "var(--hud)", boxShadow: "0 0 6px var(--hud)", transition: "width 0.3s ease" }} />
+                <div
+                  style={{
+                    position: "absolute",
+                    left: 0,
+                    width: `${pct * 100}%`,
+                    height: 3,
+                    borderRadius: 2,
+                    background: "var(--hud)",
+                    boxShadow: "0 0 6px var(--hud)",
+                    transition: "width 0.3s ease",
+                  }}
+                />
                 {/* HTML range input */}
                 <input
                   type="range"
@@ -183,7 +325,14 @@ export default function PlaybackPanel({
               </div>
 
               {/* End time */}
-              <span style={{ fontSize: "0.45rem", color: "rgba(255,255,255,0.25)", whiteSpace: "nowrap", flexShrink: 0 }}>
+              <span
+                style={{
+                  fontSize: "0.45rem",
+                  color: "rgba(255,255,255,0.25)",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}
+              >
                 {events[total - 1] ? fmt(events[total - 1].ts) : "--"}
               </span>
             </div>
@@ -195,7 +344,16 @@ export default function PlaybackPanel({
                 onClick={() => seek(0)}
                 disabled={!total}
                 title="Restart"
-                style={{ background: "rgba(var(--hud-rgb),0.06)", border: "1px solid rgba(var(--hud-rgb),0.2)", borderRadius: 4, cursor: "pointer", color: "rgba(var(--hud-rgb),0.7)", padding: "5px 10px", fontSize: "0.8rem", lineHeight: 1 }}
+                style={{
+                  background: "rgba(var(--hud-rgb),0.06)",
+                  border: "1px solid rgba(var(--hud-rgb),0.2)",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.7)",
+                  padding: "5px 10px",
+                  fontSize: "0.8rem",
+                  lineHeight: 1,
+                }}
               >
                 ⏮
               </button>
@@ -205,7 +363,16 @@ export default function PlaybackPanel({
                 onClick={() => seek(index - 1)}
                 disabled={index <= 0}
                 title="Step back"
-                style={{ background: "rgba(var(--hud-rgb),0.06)", border: "1px solid rgba(var(--hud-rgb),0.2)", borderRadius: 4, cursor: "pointer", color: "rgba(var(--hud-rgb),0.7)", padding: "5px 10px", fontSize: "0.8rem", lineHeight: 1 }}
+                style={{
+                  background: "rgba(var(--hud-rgb),0.06)",
+                  border: "1px solid rgba(var(--hud-rgb),0.2)",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.7)",
+                  padding: "5px 10px",
+                  fontSize: "0.8rem",
+                  lineHeight: 1,
+                }}
               >
                 ◀
               </button>
@@ -215,7 +382,9 @@ export default function PlaybackPanel({
                 onClick={isPlaying ? pause : play}
                 disabled={!total}
                 style={{
-                  background: isPlaying ? "rgba(var(--hud-rgb),0.15)" : "var(--hud)",
+                  background: isPlaying
+                    ? "rgba(var(--hud-rgb),0.15)"
+                    : "var(--hud)",
                   border: "none",
                   borderRadius: 4,
                   cursor: "pointer",
@@ -236,7 +405,16 @@ export default function PlaybackPanel({
                 onClick={() => seek(index + 1)}
                 disabled={index >= total - 1}
                 title="Step forward"
-                style={{ background: "rgba(var(--hud-rgb),0.06)", border: "1px solid rgba(var(--hud-rgb),0.2)", borderRadius: 4, cursor: "pointer", color: "rgba(var(--hud-rgb),0.7)", padding: "5px 10px", fontSize: "0.8rem", lineHeight: 1 }}
+                style={{
+                  background: "rgba(var(--hud-rgb),0.06)",
+                  border: "1px solid rgba(var(--hud-rgb),0.2)",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.7)",
+                  padding: "5px 10px",
+                  fontSize: "0.8rem",
+                  lineHeight: 1,
+                }}
               >
                 ▶
               </button>
@@ -246,7 +424,16 @@ export default function PlaybackPanel({
                 onClick={() => seek(total - 1)}
                 disabled={!total}
                 title="Jump to latest"
-                style={{ background: "rgba(var(--hud-rgb),0.06)", border: "1px solid rgba(var(--hud-rgb),0.2)", borderRadius: 4, cursor: "pointer", color: "rgba(var(--hud-rgb),0.7)", padding: "5px 10px", fontSize: "0.8rem", lineHeight: 1 }}
+                style={{
+                  background: "rgba(var(--hud-rgb),0.06)",
+                  border: "1px solid rgba(var(--hud-rgb),0.2)",
+                  borderRadius: 4,
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.7)",
+                  padding: "5px 10px",
+                  fontSize: "0.8rem",
+                  lineHeight: 1,
+                }}
               >
                 ⏭
               </button>
@@ -255,18 +442,29 @@ export default function PlaybackPanel({
               <div style={{ flex: 1 }} />
 
               {/* Speed */}
-              <span className="font-['Orbitron']" style={{ fontSize: "0.48rem", color: "rgba(var(--hud-rgb),0.5)", letterSpacing: "2px" }}>SPEED</span>
+              <span
+                className="font-['Orbitron']"
+                style={{
+                  fontSize: "0.48rem",
+                  color: "rgba(var(--hud-rgb),0.5)",
+                  letterSpacing: "2px",
+                }}
+              >
+                SPEED
+              </span>
               {SPEEDS.map((s) => (
                 <button
                   key={s}
                   onClick={() => setSpeed(s)}
                   className="font-['Orbitron']"
                   style={{
-                    background: speed === s ? "rgba(var(--hud-rgb),0.15)" : "transparent",
+                    background:
+                      speed === s ? "rgba(var(--hud-rgb),0.15)" : "transparent",
                     border: `1px solid ${speed === s ? "rgba(var(--hud-rgb),0.5)" : "rgba(var(--hud-rgb),0.15)"}`,
                     borderRadius: 4,
                     cursor: "pointer",
-                    color: speed === s ? "var(--hud)" : "rgba(var(--hud-rgb),0.4)",
+                    color:
+                      speed === s ? "var(--hud)" : "rgba(var(--hud-rgb),0.4)",
                     padding: "4px 8px",
                     fontSize: "0.48rem",
                     fontWeight: 700,
