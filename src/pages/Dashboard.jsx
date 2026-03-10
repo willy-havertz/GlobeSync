@@ -1,4 +1,12 @@
-import { useState, useEffect, useRef, useCallback, useMemo, lazy, Suspense } from "react";
+import {
+  useState,
+  useEffect,
+  useRef,
+  useCallback,
+  useMemo,
+  lazy,
+  Suspense,
+} from "react";
 import { motion } from "framer-motion";
 import { useSocket } from "../hooks/useSocket";
 
@@ -8,9 +16,13 @@ import StatCard from "../components/StatCard";
 import CsiLogo from "../components/CsiLogo";
 import BootScreen from "../components/BootScreen";
 import ThreatTicker from "../components/ThreatTicker";
-import ToastAlert from "../components/ToastAlert";
 import PortsPanel from "../components/PortsPanel";
 import MobileNav from "../components/MobileNav";
+import NotifBanner from "../components/NotifBanner";
+import SettingsModal from "../components/SettingsModal";
+import { usePushNotifications } from "../hooks/usePushNotifications";
+import { useTheme } from "../hooks/useTheme";
+import { useAlertRules } from "../hooks/useAlertRules";
 
 // Heavy modules — code-split so they load in parallel / after initial paint
 const GlobeMap = lazy(() => import("../components/GlobeMap"));
@@ -48,25 +60,40 @@ export default function Dashboard() {
   });
   const [chartData, setChart] = useState(() => genChartData());
   const [barData, setBar] = useState(() => genBarData());
-  const [toasts, setToasts] = useState([]);
   const ctr = useRef(100);
   const connectedRef = useRef(false);
   const [liveArcs, setLiveArcs] = useState([]);
   const [showAbout, setShowAbout] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
-  /* Auto-dismiss a toast after 5.5 s */
-  const addToast = useCallback((log) => {
-    const id = Date.now() + Math.random();
-    setToasts((prev) => [...prev.slice(-4), { ...log, id }]);
-    setTimeout(
-      () => setToasts((prev) => prev.filter((t) => t.id !== id)),
-      5500,
-    );
-  }, []);
+  /* Theme */
+  const { theme, themeId, setTheme } = useTheme();
 
-  const dismissToast = useCallback(
-    (id) => setToasts((p) => p.filter((t) => t.id !== id)),
-    [],
+  /* Alert rules */
+  const { rules, toggle: toggleRule, setAll: setAllRules } = useAlertRules();
+  /* Keep a stable ref so notification callbacks always see latest rules */
+  const rulesRef = useRef(rules);
+  useEffect(() => {
+    rulesRef.current = rules;
+  }, [rules]);
+
+  /* Push notifications */
+  const { permission, requestPermission, notify } = usePushNotifications();
+  const [notifDismissed, setNotifDismissed] = useState(false);
+  const lastNotifRef = useRef({});
+
+  /* Derive banner visibility — no effect needed */
+  const showNotifBanner = booted && permission === "default" && !notifDismissed;
+
+  /* Helper: fire a native notification with a per-tag 30 s cooldown */
+  const pushNotif = useCallback(
+    (title, body, tag) => {
+      const now = Date.now();
+      if ((lastNotifRef.current[tag] || 0) + 30000 > now) return;
+      lastNotifRef.current[tag] = now;
+      notify(title, body, { tag });
+    },
+    [notify],
   );
 
   /* Handle a real event arriving from the backend WebSocket */
@@ -96,14 +123,30 @@ export default function Dashboard() {
       if (event.arc) {
         setLiveArcs((prev) => [...prev.slice(-9), event.arc]);
       }
-      if (
-        event.severity === "CRITICAL" ||
-        (event.severity === "HIGH" && Math.random() < 0.4)
+      /* Native push notification for noteworthy events (gated by alert rules) */
+      const sev = event.severity || "";
+      const typ = event.type || "";
+      const src = event.ip || "";
+      const r = rulesRef.current;
+      if (typ.includes("RANSOMWARE") && r.ransomware) {
+        pushNotif("🦠 Ransomware Detected", `${typ} — ${src}`, "ransomware");
+      } else if (typ.includes("MALWARE") && sev === "CRITICAL" && r.malware) {
+        pushNotif("🦠 Malware Detected", `${typ} — ${src}`, "malware");
+      } else if (
+        typ.includes("DDOS") &&
+        (sev === "CRITICAL" || sev === "HIGH") &&
+        r.ddos
       ) {
-        addToast(event);
+        pushNotif("💥 DDoS Attack", `${typ} — ${src}`, "ddos");
+      } else if (typ.includes("BRUTE") && sev === "CRITICAL" && r.brute) {
+        pushNotif("🔐 Brute Force Attack", `${typ} — ${src}`, "brute");
+      } else if (typ.includes("PHISH") && sev === "CRITICAL" && r.phishing) {
+        pushNotif("🎣 Phishing Alert", `${typ} — ${src}`, "phishing");
+      } else if (sev === "CRITICAL" && r.anyCritical) {
+        pushNotif("🚨 Critical Threat", `${typ} — ${src}`, "critical");
       }
     },
-    [addToast],
+    [pushNotif],
   );
 
   const { connected } = useSocket({ onEvent: handleSocketEvent });
@@ -172,12 +215,17 @@ export default function Dashboard() {
         malware: prev.malware + randInt(0, 4),
         ddos: prev.ddos + randInt(0, 3),
       }));
-      /* Toast for CRITICAL or HIGH ~40 % of the time */
-      if (
-        newLog.severity === "CRITICAL" ||
-        (newLog.severity === "HIGH" && randInt(0, 2) === 0)
-      ) {
-        addToast(newLog);
+      /* Simulated push notification (CRITICAL events only) */
+      if (newLog.severity === "CRITICAL") {
+        const typ = newLog.type || "";
+        const src = newLog.ip || "";
+        if (typ.includes("RANSOMWARE")) {
+          pushNotif("🦠 Ransomware Detected", `${typ} — ${src}`, "ransomware");
+        } else if (typ.includes("BRUTE")) {
+          pushNotif("🔐 Brute Force Attack", `${typ} — ${src}`, "brute");
+        } else {
+          pushNotif("🚨 Critical Threat", `${typ} — ${src}`, "critical");
+        }
       }
     }, 2200);
 
@@ -208,15 +256,20 @@ export default function Dashboard() {
       {/* ── Boot screen overlay ── */}
       <BootScreen onComplete={() => setBooted(true)} />
 
-      {/* ── Toast notifications (fixed, top-right) ── */}
-      <ToastAlert toasts={toasts} onDismiss={dismissToast} />
+      {/* ── Push notification permission banner ── */}
+      {showNotifBanner && (
+        <NotifBanner
+          onEnable={async () => {
+            await requestPermission();
+            setNotifDismissed(true);
+          }}
+          onDismiss={() => setNotifDismissed(true)}
+        />
+      )}
 
       <motion.div
-        className="flex flex-col min-h-screen lg:h-screen px-2 pb-2 lg:p-2 gap-2 lg:overflow-hidden"
-        style={{
-          background:
-            "radial-gradient(ellipse at 50% 0%, #0d1a2e 0%, #02040a 65%)",
-        }}
+        className="flex flex-col min-h-screen lg:h-screen px-2 pb-6 lg:p-2 gap-2 lg:overflow-hidden overflow-x-hidden"
+        style={{ background: theme.bg }}
         variants={container}
         initial="hidden"
         animate={booted ? "show" : "hidden"}
@@ -244,38 +297,58 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ABOUT button — desktop only */}
-          <button
-            onClick={() => setShowAbout(true)}
-            className="hidden lg:flex items-center gap-2 px-3 py-1.5 rounded shrink-0 font-['Orbitron'] text-[0.58rem] tracking-[2px] text-cyan-300 font-bold cursor-pointer glass hud-corners"
-            style={{
-              background: "rgba(0,212,255,0.10)",
-              border: "1px solid rgba(0,212,255,0.45)",
-              boxShadow:
-                "0 0 18px rgba(0,212,255,0.25), 0 0 6px rgba(0,212,255,0.15), inset 0 1px 0 rgba(0,212,255,0.2)",
-              transition: "all 0.18s ease",
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(0,212,255,0.22)";
-              e.currentTarget.style.boxShadow =
-                "0 0 32px rgba(0,212,255,0.45), 0 0 10px rgba(0,212,255,0.3), inset 0 1px 0 rgba(0,212,255,0.3)";
-              e.currentTarget.style.borderColor = "rgba(0,212,255,0.75)";
-              e.currentTarget.style.transform = "translateY(-1px)";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(0,212,255,0.10)";
-              e.currentTarget.style.boxShadow =
-                "0 0 18px rgba(0,212,255,0.25), 0 0 6px rgba(0,212,255,0.15), inset 0 1px 0 rgba(0,212,255,0.2)";
-              e.currentTarget.style.borderColor = "rgba(0,212,255,0.45)";
-              e.currentTarget.style.transform = "translateY(0)";
-            }}
-          >
-            <span
-              className="w-1.5 h-1.5 rounded-full shrink-0 anim-blink"
-              style={{ background: "#00d4ff", boxShadow: "0 0 6px #00d4ff" }}
-            />
-            ABOUT
-          </button>
+          {/* ABOUT + SETTINGS buttons — desktop only */}
+          <div className="hidden lg:flex items-center gap-2 shrink-0">
+            <button
+              onClick={() => setShowSettings(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded font-['Orbitron'] text-[0.58rem] tracking-[2px] font-bold cursor-pointer glass hud-corners"
+              style={{
+                background: "rgba(var(--hud-rgb),0.08)",
+                border: "1px solid rgba(var(--hud-rgb),0.35)",
+                color: "var(--hud)",
+                transition: "all 0.18s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(var(--hud-rgb),0.18)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(var(--hud-rgb),0.08)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              ⚙ HUD
+            </button>
+            <button
+              onClick={() => setShowAbout(true)}
+              className="flex items-center gap-2 px-3 py-1.5 rounded font-['Orbitron'] text-[0.58rem] tracking-[2px] font-bold cursor-pointer glass hud-corners"
+              style={{
+                background: "rgba(var(--hud-rgb),0.10)",
+                border: "1px solid rgba(var(--hud-rgb),0.45)",
+                color: "var(--hud)",
+                boxShadow:
+                  "0 0 18px rgba(var(--hud-rgb),0.25), inset 0 1px 0 rgba(var(--hud-rgb),0.2)",
+                transition: "all 0.18s ease",
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = "rgba(var(--hud-rgb),0.22)";
+                e.currentTarget.style.transform = "translateY(-1px)";
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = "rgba(var(--hud-rgb),0.10)";
+                e.currentTarget.style.transform = "translateY(0)";
+              }}
+            >
+              <span
+                className="w-1.5 h-1.5 rounded-full shrink-0 anim-blink"
+                style={{
+                  background: "var(--hud)",
+                  boxShadow: "0 0 6px var(--hud)",
+                }}
+              />
+              ABOUT
+            </button>
+          </div>
 
           {/* Stat ticker — hidden below xl */}
           <div className="hidden xl:flex items-center gap-3 text-[0.6rem] tracking-wider flex-wrap justify-end">
@@ -372,7 +445,7 @@ export default function Dashboard() {
           <motion.div
             id="section-globe"
             variants={panelAnim}
-            className="min-h-0 h-70 sm:h-95 md:h-120 lg:h-full min-w-0 order-1 lg:order-2"
+            className="min-h-0 h-96 sm:h-112 md:h-120 lg:h-full min-w-0 order-1 lg:order-2"
           >
             <div className="flex flex-col glass anim-flicker h-full overflow-hidden cyber-grid hud-corners">
               <div className="panel-title">
@@ -396,13 +469,13 @@ export default function Dashboard() {
             </div>
           </motion.div>
 
-          {/* Right column — gauges */}
+          {/* Right column — gauges: 2-col grid on mobile, flex-col on desktop */}
           <motion.div
             id="section-health"
             variants={panelAnim}
-            className="flex flex-col gap-2 min-h-0 lg:h-full min-w-0 order-3"
+            className="grid grid-cols-2 lg:flex lg:flex-col gap-2 min-h-0 lg:h-full min-w-0 order-3"
           >
-            <div className="flex-1 glass anim-flicker flex flex-col min-h-42.5 lg:min-h-0 hud-corners">
+            <div className="glass anim-flicker flex flex-col min-h-40 lg:flex-1 lg:min-h-0 hud-corners">
               <div className="panel-title">
                 <span className="dot" />
                 SYSTEM HEALTH
@@ -423,14 +496,9 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* ── Ports Panel ── */}
-            <div id="section-ports" className="shrink-0">
-              <PortsPanel />
-            </div>
-
             <div
               id="section-threat"
-              className="flex-1 glass-red anim-flicker flex flex-col min-h-42.5 lg:min-h-0 hud-corners"
+              className="glass-red anim-flicker flex flex-col min-h-40 lg:flex-1 lg:min-h-0 hud-corners"
             >
               <div className="panel-title red">
                 <span className="dot" />
@@ -451,6 +519,11 @@ export default function Dashboard() {
                 />
               </div>
             </div>
+
+            {/* ── Ports Panel — spans both columns on mobile ── */}
+            <div id="section-ports" className="col-span-2 lg:shrink-0">
+              <PortsPanel />
+            </div>
           </motion.div>
         </div>
 
@@ -458,21 +531,21 @@ export default function Dashboard() {
         <motion.div
           id="section-charts"
           variants={panelAnim}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_210px] gap-2 shrink-0 lg:h-38.75"
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_210px] gap-2 shrink-0 lg:h-44"
         >
-          <div id="section-threat-activity" className="h-40 lg:h-full">
+          <div id="section-threat-activity" className="h-52 lg:h-full">
             <Suspense fallback={<div className="w-full h-full" />}>
               <ThreatAreaChart data={chartData} />
             </Suspense>
           </div>
-          <div id="section-stats" className="h-40 lg:h-full">
+          <div id="section-stats" className="h-52 lg:h-full">
             <Suspense fallback={<div className="w-full h-full" />}>
               <AttackBarChart data={barData} />
             </Suspense>
           </div>
 
           {/* Stat cards */}
-          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 h-32 sm:h-20 lg:h-full sm:col-span-2 lg:col-span-1">
+          <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2 lg:h-full sm:col-span-2 lg:col-span-1">
             <StatCard
               label="INTRUSIONS"
               value={stats.intrusions}
@@ -504,6 +577,16 @@ export default function Dashboard() {
       <Suspense fallback={null}>
         <AboutModal open={showAbout} onClose={() => setShowAbout(false)} />
       </Suspense>
+
+      <SettingsModal
+        open={showSettings}
+        onClose={() => setShowSettings(false)}
+        themeId={themeId}
+        setTheme={setTheme}
+        rules={rules}
+        toggleRule={toggleRule}
+        setAllRules={setAllRules}
+      />
     </>
   );
 }

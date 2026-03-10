@@ -8,6 +8,10 @@
   --orange: #ff8800;
   --green: #00ff88;
   --bg: #02040a;
+  /* HUD theme palette — overridden by useTheme hook */
+  --hud: #00d4ff;
+  --hud2: #00ffea;
+  --hud-rgb: 0, 212, 255;
 }
 
 *,
@@ -56,15 +60,15 @@ body::before {
   0%,
   100% {
     box-shadow:
-      0 0 10px #00d4ff44,
-      0 0 30px #00d4ff18,
-      inset 0 0 10px #00d4ff0a;
+      0 0 10px rgba(var(--hud-rgb), 0.27),
+      0 0 30px rgba(var(--hud-rgb), 0.1),
+      inset 0 0 10px rgba(var(--hud-rgb), 0.04);
   }
   50% {
     box-shadow:
-      0 0 22px #00d4ff88,
-      0 0 50px #00d4ff33,
-      inset 0 0 16px #00d4ff18;
+      0 0 22px rgba(var(--hud-rgb), 0.53),
+      0 0 50px rgba(var(--hud-rgb), 0.2),
+      inset 0 0 16px rgba(var(--hud-rgb), 0.1);
   }
 }
 @keyframes glow-red {
@@ -247,26 +251,26 @@ body::before {
 .glass {
   background: linear-gradient(
     135deg,
-    rgba(0, 212, 255, 0.04) 0%,
+    rgba(var(--hud-rgb), 0.04) 0%,
     rgba(168, 85, 247, 0.025) 50%,
-    rgba(0, 255, 234, 0.02) 100%
+    rgba(var(--hud-rgb), 0.02) 100%
   );
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(0, 212, 255, 0.18);
+  border: 1px solid rgba(var(--hud-rgb), 0.18);
   box-shadow:
-    0 0 18px rgba(0, 212, 255, 0.1),
+    0 0 18px rgba(var(--hud-rgb), 0.1),
     0 8px 32px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(0, 212, 255, 0.14);
+    inset 0 1px 0 rgba(var(--hud-rgb), 0.14);
 }
 .glass-dark {
   background: rgba(2, 4, 10, 0.7);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0, 212, 255, 0.14);
+  border: 1px solid rgba(var(--hud-rgb), 0.14);
   box-shadow:
-    0 0 24px rgba(0, 212, 255, 0.06),
-    inset 0 0 24px rgba(0, 212, 255, 0.03);
+    0 0 24px rgba(var(--hud-rgb), 0.06),
+    inset 0 0 24px rgba(var(--hud-rgb), 0.03);
 }
 .glass-red {
   background: linear-gradient(
@@ -302,12 +306,12 @@ body::before {
   align-items: center;
   gap: 8px;
   padding: 7px 12px 6px;
-  border-bottom: 1px solid rgba(0, 212, 255, 0.1);
-  background: rgba(0, 212, 255, 0.035);
+  border-bottom: 1px solid rgba(var(--hud-rgb), 0.1);
+  background: rgba(var(--hud-rgb), 0.035);
   font-family: "Orbitron", sans-serif;
   font-size: 0.58rem;
   letter-spacing: 3px;
-  color: #00d4ff;
+  color: var(--hud);
   flex-shrink: 0;
   position: relative;
   z-index: 2;
@@ -316,8 +320,8 @@ body::before {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #00d4ff;
-  box-shadow: 0 0 9px #00d4ff;
+  background: var(--hud);
+  box-shadow: 0 0 9px var(--hud);
   animation: blink 0.9s ease-in-out infinite;
   flex-shrink: 0;
 }
@@ -359,8 +363,8 @@ body::before {
   stroke-linecap: round;
 }
 .gauge-track.cyan {
-  stroke: #00d4ff;
-  filter: drop-shadow(0 0 6px #00d4ff88);
+  stroke: var(--hud);
+  filter: drop-shadow(0 0 6px var(--hud));
 }
 .gauge-track.red {
   stroke: #ff3333;
@@ -382,7 +386,7 @@ body::before {
   background: transparent;
 }
 ::-webkit-scrollbar-thumb {
-  background: #00d4ff33;
+  background: rgba(var(--hud-rgb), 0.2);
   border-radius: 2px;
 }
 
@@ -407,7 +411,7 @@ body::before {
   position: absolute;
   width: 10px;
   height: 10px;
-  border-color: rgba(0, 212, 255, 0.55);
+  border-color: rgba(var(--hud-rgb), 0.55);
   border-style: solid;
   pointer-events: none;
   z-index: 6;
@@ -425,7 +429,7 @@ body::before {
 }
 .hud-corners:hover::before,
 .hud-corners:hover::after {
-  border-color: rgba(0, 212, 255, 0.9);
+  border-color: rgba(var(--hud-rgb), 0.9);
 }
 
 /* Floating depth shadow under tilted panel */
@@ -465,7 +469,7 @@ body::before {
   transform: translateY(-50%);
   width: 40px;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(0, 212, 255, 0.5));
+  background: linear-gradient(90deg, transparent, rgba(var(--hud-rgb), 0.5));
   pointer-events: none;
 }
 
@@ -475,8 +479,8 @@ body::before {
 }
 .stat-card:hover {
   box-shadow:
-    0 0 32px rgba(0, 212, 255, 0.22),
-    0 0 8px rgba(0, 212, 255, 0.12);
+    0 0 32px rgba(var(--hud-rgb), 0.22),
+    0 0 8px rgba(var(--hud-rgb), 0.12);
 }
 
 /* ── Mobile responsive helpers ── */
@@ -486,11 +490,20 @@ body::before {
   body,
   #root {
     height: auto;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
 
   .panel-title {
-    font-size: 0.5rem;
+    font-size: 0.52rem;
+    letter-spacing: 2px;
     padding: 6px 10px 5px;
+  }
+
+  /* Prevent chart/table content from causing horizontal scroll */
+  .recharts-wrapper,
+  .recharts-surface {
+    max-width: 100%;
+    overflow: hidden;
   }
 }

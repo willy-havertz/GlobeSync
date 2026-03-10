@@ -141,14 +141,46 @@ const THREAT_LEVELS = [
 ];
 
 const ATTACK_CATEGORIES = [
-  { name: "MALWARE", color: "#ff2d2d", desc: "Malicious software delivery or execution — includes ransomware, trojans, RATs and droppers detected by ThreatFox and URLhaus." },
-  { name: "DDOS", color: "#ff8800", desc: "Distributed denial-of-service flood traffic. Typically sourced from Feodo-tracked botnet C2 infrastructure coordinating compromised hosts." },
-  { name: "PHISHING", color: "#ffcc00", desc: "Credential harvesting or deceptive lure campaigns. Identified via URLhaus phishing entries and OTX community-reported phishing pulses." },
-  { name: "BRUTEFORCE", color: "#a855f7", desc: "Repeated credential stuffing or password spray attempts against exposed services such as SSH (22), RDP (3389) and web logins (443)." },
-  { name: "RANSOMWARE", color: "#ff61a6", desc: "Ransomware payload delivery infrastructure — domains, IPs and URLs attributed to active ransomware groups by ThreatFox family tags." },
-  { name: "SQLINJECT", color: "#00ff88", desc: "SQL injection probes targeting exposed web applications. Identified from OTX pulses and AbuseIPDB reports of web attack categories." },
-  { name: "C2", color: "#00d4ff", desc: "Command and control callback IPs. Primary source is Feodo Tracker which lists active botnet C2 servers for Emotet, TrickBot, QakBot and allied families." },
-  { name: "MALWARE HOSTING", color: "#ffd140", desc: "Infrastructure actively serving malware payloads. Sourced from URLhaus active entries where status is confirmed online at time of polling." },
+  {
+    name: "MALWARE",
+    color: "#ff2d2d",
+    desc: "Malicious software delivery or execution — includes ransomware, trojans, RATs and droppers detected by ThreatFox and URLhaus.",
+  },
+  {
+    name: "DDOS",
+    color: "#ff8800",
+    desc: "Distributed denial-of-service flood traffic. Typically sourced from Feodo-tracked botnet C2 infrastructure coordinating compromised hosts.",
+  },
+  {
+    name: "PHISHING",
+    color: "#ffcc00",
+    desc: "Credential harvesting or deceptive lure campaigns. Identified via URLhaus phishing entries and OTX community-reported phishing pulses.",
+  },
+  {
+    name: "BRUTEFORCE",
+    color: "#a855f7",
+    desc: "Repeated credential stuffing or password spray attempts against exposed services such as SSH (22), RDP (3389) and web logins (443).",
+  },
+  {
+    name: "RANSOMWARE",
+    color: "#ff61a6",
+    desc: "Ransomware payload delivery infrastructure — domains, IPs and URLs attributed to active ransomware groups by ThreatFox family tags.",
+  },
+  {
+    name: "SQLINJECT",
+    color: "#00ff88",
+    desc: "SQL injection probes targeting exposed web applications. Identified from OTX pulses and AbuseIPDB reports of web attack categories.",
+  },
+  {
+    name: "C2",
+    color: "#00d4ff",
+    desc: "Command and control callback IPs. Primary source is Feodo Tracker which lists active botnet C2 servers for Emotet, TrickBot, QakBot and allied families.",
+  },
+  {
+    name: "MALWARE HOSTING",
+    color: "#ffd140",
+    desc: "Infrastructure actively serving malware payloads. Sourced from URLhaus active entries where status is confirmed online at time of polling.",
+  },
 ];
 
 const FAQ = [
@@ -228,6 +260,57 @@ const GETTING_STARTED = [
       "Bookmark the page for quick access (Ctrl+D / Cmd+D).",
       "For the best experience, Chrome, Edge or Samsung Internet are recommended as they fully support PWA installation.",
     ],
+  },
+];
+
+const FUTURE_ENHANCEMENTS = [
+  {
+    icon: "🤖",
+    color: "#00d4ff",
+    title: "AI Anomaly Detection",
+    desc: "Integrate an on-device ML model to detect behavioural anomalies in real time — flagging unusual traffic spikes, novel attack patterns and zero-day signatures before feeds report them.",
+  },
+  {
+    icon: "🔐",
+    color: "#a78bfa",
+    title: "Multi-User Auth & RBAC",
+    desc: "Role-based dashboards for SOC teams — analysts see raw feeds, managers see executive summaries. OAuth2 / OIDC sign-in with JWT session management.",
+  },
+  {
+    icon: "📊",
+    color: "#22c55e",
+    title: "Report Export (PDF / CSV)",
+    desc: "One-click incident report generation — export a snapshot of the current threat landscape, top IOCs and timeline as a formatted PDF or machine-readable CSV for SIEM ingestion.",
+  },
+  {
+    icon: "🌐",
+    color: "#f97316",
+    title: "SIEM & Webhook Integration",
+    desc: "Push critical events to Splunk, Elastic SIEM, Microsoft Sentinel or any webhook endpoint in real time. Configurable per-severity routing and custom payload templates.",
+  },
+  {
+    icon: "📍",
+    color: "#f43f5e",
+    title: "Geo-Fencing Alerts",
+    desc: "Define geographic regions of interest. Receive instant push notifications whenever a threat originates from or targets one of your monitored regions.",
+  },
+  {
+    icon: "⏳",
+    color: "#eab308",
+    title: "Historical Playback",
+    desc: "Rewind the globe to any point in time and replay the attack timeline. Stored event logs enable post-incident analysis, pattern discovery and security training sessions.",
+  },
+  {
+    icon: "🎨",
+    color: "#06b6d4",
+    title: "Custom Alert Rules & Themes",
+    desc: "User-defined severity thresholds and alert rules, plus switchable HUD colour profiles (cyan, amber, red, green) to suit different deployment environments.",
+  },
+  {
+    icon: "📱",
+    color: "#8b5cf6",
+    title: "Native Mobile App",
+    desc: "Dedicated iOS and Android apps built with React Native, sharing the same backend WebSocket. Includes lock-screen widgets for live threat counters and home-screen attack map previews.",
   },
 ];
 
@@ -503,7 +586,8 @@ export default function AboutModal({ open, onClose }) {
                 <Section title="Getting Started">
                   <div className="flex flex-col gap-2">
                     <p className="text-[0.65rem] text-cyan-600 leading-relaxed pb-1">
-                      GlobeSync AI is a Progressive Web App — install it directly from your browser with no app store required.
+                      GlobeSync AI is a Progressive Web App — install it
+                      directly from your browser with no app store required.
                     </p>
                     {GETTING_STARTED.map((item) => (
                       <div
@@ -515,7 +599,9 @@ export default function AboutModal({ open, onClose }) {
                         }}
                       >
                         <div className="flex items-center gap-2 mb-3">
-                          <span className="text-lg leading-none">{item.icon}</span>
+                          <span className="text-lg leading-none">
+                            {item.icon}
+                          </span>
                           <span
                             className="font-['Orbitron'] text-[0.65rem] font-bold tracking-widest"
                             style={{ color: item.color }}
@@ -532,7 +618,9 @@ export default function AboutModal({ open, onClose }) {
                               >
                                 {String(i + 1).padStart(2, "0")}
                               </span>
-                              <span className="text-[0.63rem] text-cyan-500 leading-relaxed">{s}</span>
+                              <span className="text-[0.63rem] text-cyan-500 leading-relaxed">
+                                {s}
+                              </span>
                             </li>
                           ))}
                         </ol>
@@ -627,17 +715,24 @@ export default function AboutModal({ open, onClose }) {
                 <Section title="Threat Classification">
                   <div className="flex flex-col gap-4">
                     <p className="text-[0.65rem] text-cyan-600 leading-relaxed">
-                      Every event is assigned a severity level and attack category based on the originating feed, the indicator type, and any available enrichment data from AbuseIPDB.
+                      Every event is assigned a severity level and attack
+                      category based on the originating feed, the indicator
+                      type, and any available enrichment data from AbuseIPDB.
                     </p>
 
                     {/* Severity levels */}
                     <div className="flex flex-col gap-2">
-                      <div className="font-['Orbitron'] text-[0.55rem] tracking-[3px] text-cyan-700 uppercase mb-1">Severity Levels</div>
+                      <div className="font-['Orbitron'] text-[0.55rem] tracking-[3px] text-cyan-700 uppercase mb-1">
+                        Severity Levels
+                      </div>
                       {THREAT_LEVELS.map((t) => (
                         <div
                           key={t.level}
                           className="flex gap-3 px-4 py-3 rounded-md items-start"
-                          style={{ background: `${t.color}0a`, border: `1px solid ${t.color}28` }}
+                          style={{
+                            background: `${t.color}0a`,
+                            border: `1px solid ${t.color}28`,
+                          }}
                         >
                           <span
                             className="font-['Orbitron'] text-[0.62rem] font-black tracking-widest shrink-0 pt-0.5 min-w-15.5"
@@ -646,8 +741,13 @@ export default function AboutModal({ open, onClose }) {
                             {t.level}
                           </span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-[0.6rem] text-cyan-600 leading-relaxed mb-1">{t.desc}</p>
-                            <p className="text-[0.56rem] leading-relaxed" style={{ color: `${t.color}80` }}>
+                            <p className="text-[0.6rem] text-cyan-600 leading-relaxed mb-1">
+                              {t.desc}
+                            </p>
+                            <p
+                              className="text-[0.56rem] leading-relaxed"
+                              style={{ color: `${t.color}80` }}
+                            >
                               e.g. {t.examples}
                             </p>
                           </div>
@@ -657,17 +757,25 @@ export default function AboutModal({ open, onClose }) {
 
                     {/* Attack categories */}
                     <div className="flex flex-col gap-2">
-                      <div className="font-['Orbitron'] text-[0.55rem] tracking-[3px] text-cyan-700 uppercase mb-1">Attack Categories</div>
+                      <div className="font-['Orbitron'] text-[0.55rem] tracking-[3px] text-cyan-700 uppercase mb-1">
+                        Attack Categories
+                      </div>
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {ATTACK_CATEGORIES.map((c) => (
                           <div
                             key={c.name}
                             className="flex gap-3 px-3 py-3 rounded-md"
-                            style={{ background: `${c.color}08`, border: `1px solid ${c.color}22` }}
+                            style={{
+                              background: `${c.color}08`,
+                              border: `1px solid ${c.color}22`,
+                            }}
                           >
                             <div
                               className="w-1 rounded-full shrink-0 self-stretch"
-                              style={{ background: c.color, boxShadow: `0 0 6px ${c.color}` }}
+                              style={{
+                                background: c.color,
+                                boxShadow: `0 0 6px ${c.color}`,
+                              }}
                             />
                             <div>
                               <div
@@ -676,7 +784,9 @@ export default function AboutModal({ open, onClose }) {
                               >
                                 {c.name}
                               </div>
-                              <p className="text-[0.58rem] text-cyan-700 leading-relaxed">{c.desc}</p>
+                              <p className="text-[0.58rem] text-cyan-700 leading-relaxed">
+                                {c.desc}
+                              </p>
                             </div>
                           </div>
                         ))}
@@ -885,6 +995,42 @@ export default function AboutModal({ open, onClose }) {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </Section>
+
+                {/* Future Enhancements ─────────────────────────── */}
+                <Section title="Future Enhancements">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[0.65rem] text-cyan-600 leading-relaxed pb-1">
+                      Planned features on the GlobeSync AI roadmap.
+                    </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {FUTURE_ENHANCEMENTS.map((item) => (
+                        <div
+                          key={item.title}
+                          className="flex gap-3 px-4 py-3 rounded-md"
+                          style={{
+                            background: `${item.color}08`,
+                            border: `1px solid ${item.color}22`,
+                          }}
+                        >
+                          <span className="text-xl leading-none shrink-0 mt-0.5">
+                            {item.icon}
+                          </span>
+                          <div>
+                            <div
+                              className="font-['Orbitron'] text-[0.62rem] font-bold tracking-widest mb-1"
+                              style={{ color: item.color }}
+                            >
+                              {item.title}
+                            </div>
+                            <p className="text-[0.6rem] text-cyan-700 leading-relaxed">
+                              {item.desc}
+                            </p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Section>
 
