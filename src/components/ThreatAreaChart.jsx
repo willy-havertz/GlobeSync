@@ -16,9 +16,19 @@ function ThreatAreaChart({ data }) {
       className="flex flex-col glass anim-flicker h-full"
       style={{ minHeight: 130, minWidth: 0, overflow: "hidden" }}
     >
-      <div className="panel-title">
+      <div className="panel-title" style={{ overflow: "hidden" }}>
         <span className="dot" />
-        <span>THREAT ACTIVITY (LAST 32 MIN)</span>
+        <span
+          style={{
+            overflow: "hidden",
+            textOverflow: "ellipsis",
+            whiteSpace: "nowrap",
+            minWidth: 0,
+            flex: 1,
+          }}
+        >
+          THREAT ACTIVITY (32 MIN)
+        </span>
       </div>
       <div className="flex-1 px-1 py-1" style={{ minHeight: 0 }}>
         <ResponsiveContainer

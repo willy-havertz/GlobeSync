@@ -107,6 +107,19 @@ def get_logs():
     return list(event_store)[-50:][::-1]   # newest first
 
 
+@app.get("/api/history")
+def get_history(limit: int = 200):
+    """Return all stored events sorted oldest-first for playback."""
+    events = list(event_store)
+    # Ensure every event has a ts field (backfill if missing)
+    import time as _time
+    for i, e in enumerate(events):
+        if "ts" not in e:
+            e["ts"] = _time.time() - (len(events) - i) * 60
+    events.sort(key=lambda e: e["ts"])
+    return events[-limit:]
+
+
 @app.get("/api/stats")
 def get_stats():
     return stats

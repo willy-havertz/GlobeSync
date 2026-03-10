@@ -64,8 +64,10 @@ def _now_str() -> str:
 
 def _build_event(ip, severity, event_type, slat, slng):
     target = random.choice(TARGETS)
+    now = datetime.now(timezone.utc)
     return {
-        "id":       f"{ip}-{datetime.now(timezone.utc).timestamp():.3f}",
+        "id":       f"{ip}-{now.timestamp():.3f}",
+        "ts":       now.timestamp(),
         "time":     _now_str(),
         "ip":       ip,
         "severity": severity,

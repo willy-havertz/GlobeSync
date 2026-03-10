@@ -1,15 +1,12 @@
 /**
  * SettingsModal.jsx
- *
- * HUD-styled settings overlay.
- * Two sections:
- *  1. Colour Profile — pick one of four HUD themes
- *  2. Alert Rules    — toggle which event types trigger push notifications
+ * HUD-styled settings overlay — theme picker + alert rule toggles.
+ * Rendered via portal so parent stacking contexts cannot clip it.
  */
 
 import { useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import PropTypes from "prop-types";
 import { THEMES } from "../hooks/useTheme";
 import { ALERT_RULE_DEFS } from "../hooks/useAlertRules";
 
@@ -22,7 +19,6 @@ export default function SettingsModal({
   toggleRule,
   setAllRules,
 }) {
-  /* Close on Escape */
   useEffect(() => {
     if (!open) return;
     const handler = (e) => {
@@ -32,99 +28,181 @@ export default function SettingsModal({
     return () => window.removeEventListener("keydown", handler);
   }, [open, onClose]);
 
-  const allEnabled = Object.values(rules).every(Boolean);
+  const allEnabled = rules && Object.values(rules).every(Boolean);
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
           {/* Backdrop */}
           <motion.div
-            key="settings-backdrop"
+            key="sm-backdrop"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-150 bg-black/70 backdrop-blur-sm"
             onClick={onClose}
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9000,
+              background: "rgba(0,0,0,0.75)",
+              backdropFilter: "blur(4px)",
+            }}
           />
 
-          {/* Panel */}
-          <motion.div
-            key="settings-panel"
-            initial={{ opacity: 0, scale: 0.96, y: -16 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.96, y: -16 }}
-            transition={{ duration: 0.25, ease: "easeOut" }}
-            className="fixed z-160 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(92vw,440px)] max-h-[85vh] overflow-y-auto glass hud-corners flex flex-col"
-            style={{ background: "rgba(2,6,16,0.97)" }}
+          {/* Centering shell — flex handles positioning; framer-motion only animates opacity/scale */}
+          <div
+            style={{
+              position: "fixed",
+              inset: 0,
+              zIndex: 9001,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "16px",
+              pointerEvents: "none",
+            }}
           >
-            {/* Header */}
+          <motion.div
+            key="sm-panel"
+            initial={{ opacity: 0, scale: 0.95, y: -12 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -12 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            style={{
+              pointerEvents: "auto",
+              width: "100%",
+              maxWidth: 440,
+              maxHeight: "85vh",
+              overflowY: "auto",
+              background: "rgba(2,6,16,0.97)",
+              border: "1px solid rgba(var(--hud-rgb),0.30)",
+              borderRadius: 6,
+              boxShadow:
+                "0 0 40px rgba(var(--hud-rgb),0.18), 0 8px 32px rgba(0,0,0,0.6)",
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            {/* ── Header ── */}
             <div
-              className="flex items-center justify-between px-5 py-3 shrink-0"
-              style={{ borderBottom: "1px solid rgba(var(--hud-rgb),0.14)" }}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "space-between",
+                padding: "12px 20px",
+                borderBottom: "1px solid rgba(var(--hud-rgb),0.14)",
+                flexShrink: 0,
+              }}
             >
-              <div className="flex items-center gap-2">
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span
-                  className="w-2 h-2 rounded-full anim-blink"
+                  className="anim-blink"
                   style={{
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
                     background: "var(--hud)",
                     boxShadow: "0 0 8px var(--hud)",
+                    display: "inline-block",
                   }}
                 />
                 <span
-                  className="font-['Orbitron'] text-[0.7rem] font-bold tracking-[3px]"
-                  style={{ color: "var(--hud)" }}
+                  className="font-['Orbitron']"
+                  style={{
+                    fontSize: "0.68rem",
+                    fontWeight: 700,
+                    letterSpacing: "3px",
+                    color: "var(--hud)",
+                  }}
                 >
-                  SETTINGS
+                  HUD SETTINGS
                 </span>
               </div>
               <button
                 onClick={onClose}
-                className="text-cyan-700 hover:text-cyan-300 text-base leading-none cursor-pointer transition-colors duration-150 px-1"
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  color: "rgba(var(--hud-rgb),0.5)",
+                  fontSize: "1rem",
+                  lineHeight: 1,
+                  padding: "4px 6px",
+                }}
               >
                 ✕
               </button>
             </div>
 
-            <div className="flex flex-col gap-6 px-5 py-5">
-              {/* ── Theme ── */}
+            <div
+              style={{
+                padding: 20,
+                display: "flex",
+                flexDirection: "column",
+                gap: 24,
+              }}
+            >
+              {/* ── Colour Profile ── */}
               <section>
                 <div
-                  className="font-['Orbitron'] text-[0.58rem] tracking-[3px] mb-3"
-                  style={{ color: "var(--hud)" }}
+                  className="font-['Orbitron']"
+                  style={{
+                    fontSize: "0.55rem",
+                    letterSpacing: "3px",
+                    color: "var(--hud)",
+                    marginBottom: 12,
+                  }}
                 >
                   COLOUR PROFILE
                 </div>
-                <div className="grid grid-cols-4 gap-2">
+                <div
+                  style={{
+                    display: "grid",
+                    gridTemplateColumns: "repeat(4,1fr)",
+                    gap: 8,
+                  }}
+                >
                   {Object.values(THEMES).map((t) => {
                     const active = themeId === t.id;
                     return (
                       <button
                         key={t.id}
                         onClick={() => setTheme(t.id)}
-                        className="flex flex-col items-center gap-2 py-3 px-2 rounded cursor-pointer transition-all duration-200"
                         style={{
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          gap: 6,
+                          padding: "12px 6px",
+                          borderRadius: 6,
+                          cursor: "pointer",
                           background: active
-                            ? `rgba(${t.hudRgb}, 0.15)`
+                            ? `rgba(${t.hudRgb},0.15)`
                             : "rgba(255,255,255,0.03)",
                           border: `1px solid ${active ? t.hud : "rgba(255,255,255,0.08)"}`,
                           boxShadow: active
-                            ? `0 0 16px rgba(${t.hudRgb}, 0.35)`
+                            ? `0 0 16px rgba(${t.hudRgb},0.35)`
                             : "none",
+                          transition: "all 0.18s ease",
                         }}
                       >
-                        {/* Colour swatch */}
                         <span
-                          className="w-6 h-6 rounded-full block"
                           style={{
+                            width: 22,
+                            height: 22,
+                            borderRadius: "50%",
                             background: t.swatch,
                             boxShadow: active ? `0 0 12px ${t.swatch}` : "none",
+                            display: "block",
                           }}
                         />
                         <span
-                          className="font-['Orbitron'] text-[0.45rem] tracking-widest"
+                          className="font-['Orbitron']"
                           style={{
+                            fontSize: "0.44rem",
+                            letterSpacing: "2px",
                             color: active ? t.hud : "rgba(255,255,255,0.35)",
                           }}
                         >
@@ -132,10 +210,14 @@ export default function SettingsModal({
                         </span>
                         {active && (
                           <span
-                            className="text-[0.45rem] font-bold"
-                            style={{ color: t.hud }}
+                            className="font-['Orbitron']"
+                            style={{
+                              fontSize: "0.4rem",
+                              color: t.hud,
+                              fontWeight: 700,
+                            }}
                           >
-                            ACTIVE
+                            ● ACTIVE
                           </span>
                         )}
                       </button>
@@ -146,55 +228,112 @@ export default function SettingsModal({
 
               {/* ── Alert Rules ── */}
               <section>
-                <div className="flex items-center justify-between mb-3">
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                    marginBottom: 12,
+                  }}
+                >
                   <div
-                    className="font-['Orbitron'] text-[0.58rem] tracking-[3px]"
-                    style={{ color: "var(--hud)" }}
+                    className="font-['Orbitron']"
+                    style={{
+                      fontSize: "0.55rem",
+                      letterSpacing: "3px",
+                      color: "var(--hud)",
+                    }}
                   >
-                    ALERT RULES
+                    PUSH ALERT RULES
                   </div>
                   <button
                     onClick={() => setAllRules(!allEnabled)}
-                    className="font-['Orbitron'] text-[0.45rem] tracking-widest px-2 py-1 rounded cursor-pointer transition-colors duration-150"
+                    className="font-['Orbitron']"
                     style={{
+                      fontSize: "0.44rem",
+                      letterSpacing: "2px",
+                      padding: "4px 8px",
+                      borderRadius: 4,
+                      cursor: "pointer",
                       border: "1px solid rgba(var(--hud-rgb),0.3)",
                       color: "rgba(var(--hud-rgb),0.7)",
+                      background: "transparent",
                     }}
                   >
                     {allEnabled ? "DISABLE ALL" : "ENABLE ALL"}
                   </button>
                 </div>
 
-                <div className="flex flex-col gap-1.5">
+                <div
+                  style={{ display: "flex", flexDirection: "column", gap: 6 }}
+                >
                   {ALERT_RULE_DEFS.map((rule) => {
                     const on = rules[rule.id];
                     return (
                       <button
                         key={rule.id}
                         onClick={() => toggleRule(rule.id)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded text-left cursor-pointer transition-all duration-150 w-full"
                         style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 10,
+                          padding: "10px 12px",
+                          borderRadius: 6,
+                          cursor: "pointer",
+                          width: "100%",
+                          textAlign: "left",
                           background: on
                             ? "rgba(var(--hud-rgb),0.06)"
                             : "rgba(255,255,255,0.02)",
                           border: `1px solid ${on ? "rgba(var(--hud-rgb),0.22)" : "rgba(255,255,255,0.06)"}`,
+                          transition: "all 0.15s ease",
                         }}
                       >
-                        <span className="text-base leading-none shrink-0">
+                        <span
+                          style={{
+                            fontSize: "1.1rem",
+                            lineHeight: 1,
+                            flexShrink: 0,
+                          }}
+                        >
                           {rule.icon}
                         </span>
-                        <div className="flex-1 min-w-0">
-                          <div className="font-['Orbitron'] text-[0.58rem] font-bold tracking-widest text-cyan-300">
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div
+                            className="font-['Orbitron']"
+                            style={{
+                              fontSize: "0.56rem",
+                              fontWeight: 700,
+                              letterSpacing: "2px",
+                              color: on
+                                ? "var(--hud)"
+                                : "rgba(255,255,255,0.4)",
+                            }}
+                          >
                             {rule.label}
                           </div>
-                          <div className="text-[0.52rem] text-cyan-800 mt-0.5 truncate">
+                          <div
+                            style={{
+                              fontSize: "0.5rem",
+                              color: "rgba(255,255,255,0.25)",
+                              marginTop: 2,
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                              whiteSpace: "nowrap",
+                            }}
+                          >
                             {rule.desc}
                           </div>
                         </div>
                         {/* Toggle pill */}
                         <div
-                          className="shrink-0 w-8 h-4 rounded-full relative transition-all duration-200"
                           style={{
+                            flexShrink: 0,
+                            width: 32,
+                            height: 16,
+                            borderRadius: 8,
+                            position: "relative",
+                            transition: "all 0.2s ease",
                             background: on
                               ? "var(--hud)"
                               : "rgba(255,255,255,0.12)",
@@ -204,8 +343,16 @@ export default function SettingsModal({
                           }}
                         >
                           <span
-                            className="absolute top-0.5 w-3 h-3 rounded-full bg-white transition-all duration-200"
-                            style={{ left: on ? "18px" : "2px" }}
+                            style={{
+                              position: "absolute",
+                              top: 2,
+                              width: 12,
+                              height: 12,
+                              borderRadius: "50%",
+                              background: "#fff",
+                              left: on ? 18 : 2,
+                              transition: "left 0.2s ease",
+                            }}
                           />
                         </div>
                       </button>
@@ -213,25 +360,24 @@ export default function SettingsModal({
                   })}
                 </div>
 
-                <p className="text-[0.52rem] text-cyan-900 mt-3 leading-relaxed">
+                <p
+                  style={{
+                    fontSize: "0.5rem",
+                    color: "rgba(255,255,255,0.2)",
+                    marginTop: 12,
+                    lineHeight: 1.6,
+                  }}
+                >
                   Notifications require browser permission. Install as a PWA for
-                  background alerts even when the tab is not active.
+                  background alerts.
                 </p>
               </section>
             </div>
           </motion.div>
+          </div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   );
 }
-
-SettingsModal.propTypes = {
-  open: PropTypes.bool.isRequired,
-  onClose: PropTypes.func.isRequired,
-  themeId: PropTypes.string.isRequired,
-  setTheme: PropTypes.func.isRequired,
-  rules: PropTypes.object.isRequired,
-  toggleRule: PropTypes.func.isRequired,
-  setAllRules: PropTypes.func.isRequired,
-};

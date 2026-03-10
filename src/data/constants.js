@@ -165,8 +165,8 @@ export function genBarData() {
     { name: "Malware", count: randInt(600, 900), fill: "#ff2d2d" },
     { name: "DDoS", count: randInt(400, 700), fill: "#ff8800" },
     { name: "Phishing", count: randInt(200, 500), fill: "#ffcc00" },
-    { name: "BruteForce", count: randInt(150, 400), fill: "#a855f7" },
-    { name: "Ransomware", count: randInt(80, 250), fill: "#ff4466" },
-    { name: "SQLInject", count: randInt(60, 180), fill: "#00d4ff" },
+    { name: "Brute", count: randInt(150, 400), fill: "#a855f7" },
+    { name: "Ransom", count: randInt(80, 250), fill: "#ff4466" },
+    { name: "SQLi", count: randInt(60, 180), fill: "#00d4ff" },
   ];
 }

@@ -52,7 +52,7 @@ function AttackBarChart({ data }) {
         >
           <BarChart
             data={data}
-            margin={{ top: 4, right: 8, bottom: 0, left: -22 }}
+            margin={{ top: 4, right: 8, bottom: 28, left: -22 }}
             barCategoryGap="25%"
           >
             <CartesianGrid
@@ -63,6 +63,9 @@ function AttackBarChart({ data }) {
             <XAxis
               dataKey="name"
               tick={{ fontSize: 7, fill: "#9966dd" }}
+              angle={-35}
+              textAnchor="end"
+              interval={0}
               axisLine={false}
               tickLine={false}
             />

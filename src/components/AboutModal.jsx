@@ -296,14 +296,16 @@ const FUTURE_ENHANCEMENTS = [
   },
   {
     icon: "⏳",
-    color: "#eab308",
+    color: "#ff8800",
     title: "Historical Playback",
-    desc: "Rewind the globe to any point in time and replay the attack timeline. Stored event logs enable post-incident analysis, pattern discovery and security training sessions.",
+    shipped: true,
+    desc: "Rewind the globe to any point in time and replay the attack timeline. Timeline scrubber, variable speed (1× – 10×), event counter and full incident detail panel — all live in v2 now.",
   },
   {
     icon: "🎨",
     color: "#06b6d4",
     title: "Custom Alert Rules & Themes",
+    shipped: true,
     desc: "User-defined severity thresholds and alert rules, plus switchable HUD colour profiles (cyan, amber, red, green) to suit different deployment environments.",
   },
   {
@@ -1002,22 +1004,32 @@ export default function AboutModal({ open, onClose }) {
                 <Section title="Future Enhancements">
                   <div className="flex flex-col gap-2">
                     <p className="text-[0.65rem] text-cyan-600 leading-relaxed pb-1">
-                      Planned features on the GlobeSync AI roadmap.
+                      Planned features on the GlobeSync AI roadmap. Items marked{" "}
+                      <span style={{ color: "#22c55e", fontWeight: 700 }}>✓ LIVE</span>{" "}
+                      have already shipped.
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                       {FUTURE_ENHANCEMENTS.map((item) => (
                         <div
                           key={item.title}
-                          className="flex gap-3 px-4 py-3 rounded-md"
+                          className="flex gap-3 px-4 py-3 rounded-md relative"
                           style={{
-                            background: `${item.color}08`,
-                            border: `1px solid ${item.color}22`,
+                            background: item.shipped ? `${item.color}12` : `${item.color}08`,
+                            border: `1px solid ${item.shipped ? item.color + "44" : item.color + "22"}`,
                           }}
                         >
+                          {item.shipped && (
+                            <span
+                              className="absolute top-2 right-2 font-['Orbitron'] text-[0.45rem] font-black tracking-widest px-1.5 py-0.5 rounded-full"
+                              style={{ background: "rgba(34,197,94,0.18)", color: "#22c55e", border: "1px solid rgba(34,197,94,0.4)" }}
+                            >
+                              ✓ LIVE
+                            </span>
+                          )}
                           <span className="text-xl leading-none shrink-0 mt-0.5">
                             {item.icon}
                           </span>
-                          <div>
+                          <div className="min-w-0 pr-6">
                             <div
                               className="font-['Orbitron'] text-[0.62rem] font-bold tracking-widest mb-1"
                               style={{ color: item.color }}

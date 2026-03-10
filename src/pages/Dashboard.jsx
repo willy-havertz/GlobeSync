@@ -20,9 +20,11 @@ import PortsPanel from "../components/PortsPanel";
 import MobileNav from "../components/MobileNav";
 import NotifBanner from "../components/NotifBanner";
 import SettingsModal from "../components/SettingsModal";
+import PlaybackPanel from "../components/PlaybackPanel";
 import { usePushNotifications } from "../hooks/usePushNotifications";
 import { useTheme } from "../hooks/useTheme";
 import { useAlertRules } from "../hooks/useAlertRules";
+import { usePlayback } from "../hooks/usePlayback";
 
 // Heavy modules — code-split so they load in parallel / after initial paint
 const GlobeMap = lazy(() => import("../components/GlobeMap"));
@@ -66,6 +68,10 @@ export default function Dashboard() {
   const [showAbout, setShowAbout] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
+  /* Playback state */
+  const [playbackLogs, setPlaybackLogs] = useState([]);
+  const [playbackArcs, setPlaybackArcs] = useState([]);
+
   /* Theme */
   const { theme, themeId, setTheme } = useTheme();
 
@@ -76,6 +82,25 @@ export default function Dashboard() {
   useEffect(() => {
     rulesRef.current = rules;
   }, [rules]);
+
+  /* Playback replay callback — prepends each replayed event into playback state */
+  const handleReplay = useCallback((event) => {
+    setPlaybackLogs((prev) => [event, ...prev].slice(0, 50));
+    if (event.arc) setPlaybackArcs((prev) => [...prev.slice(-9), event.arc]);
+  }, []);
+
+  const {
+    isPlaybackMode, isPlaying, events: pbEvents, index: pbIndex,
+    speed: pbSpeed, loading: pbLoading, error: pbError,
+    openPlayback: _openPlayback, closePlayback, play: pbPlay, pause: pbPause,
+    seek: pbSeek, setSpeed: pbSetSpeed,
+  } = usePlayback({ onReplay: handleReplay });
+
+  const startPlayback = useCallback(() => {
+    setPlaybackLogs([]);
+    setPlaybackArcs([]);
+    _openPlayback();
+  }, [_openPlayback]);
 
   /* Push notifications */
   const { permission, requestPermission, notify } = usePushNotifications();
@@ -153,6 +178,13 @@ export default function Dashboard() {
 
   /* Stable arcs array — only changes when liveArcs actually changes */
   const allArcs = useMemo(() => [...BASE_ARCS, ...liveArcs], [liveArcs]);
+
+  /* Swap to playback data while replaying */
+  const displayLogs = isPlaybackMode ? playbackLogs : logs;
+  const displayArcs = useMemo(
+    () => (isPlaybackMode ? [...BASE_ARCS, ...playbackArcs] : allArcs),
+    [isPlaybackMode, playbackArcs, allArcs],
+  );
 
   /* Derive gauge percentages from live stats */
   const gauges = useMemo(() => {
@@ -269,7 +301,7 @@ export default function Dashboard() {
 
       <motion.div
         className="flex flex-col min-h-screen lg:h-screen px-2 pb-6 lg:p-2 gap-2 lg:overflow-hidden overflow-x-hidden"
-        style={{ background: theme.bg }}
+        style={{ background: theme.bg, paddingBottom: isPlaybackMode ? "9rem" : undefined }}
         variants={container}
         initial="hidden"
         animate={booted ? "show" : "hidden"}
@@ -280,7 +312,11 @@ export default function Dashboard() {
           className="flex items-center justify-between px-4 py-2 glass shrink-0 hud-corners gap-2 fixed top-0 left-0 right-0 z-50 lg:relative lg:top-auto lg:left-auto lg:right-auto lg:z-auto"
         >
           {/* Mobile hamburger */}
-          <MobileNav onOpenAbout={() => setShowAbout(true)} />
+          <MobileNav
+            onOpenAbout={() => setShowAbout(true)}
+            onOpenSettings={() => setShowSettings(true)}
+            onOpenPlayback={startPlayback}
+          />
 
           {/* Logo */}
           <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -297,7 +333,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* ABOUT + SETTINGS buttons — desktop only */}
+          {/* ABOUT + SETTINGS + PLAYBACK buttons — desktop only */}
           <div className="hidden lg:flex items-center gap-2 shrink-0">
             <button
               onClick={() => setShowSettings(true)}
@@ -318,6 +354,20 @@ export default function Dashboard() {
               }}
             >
               ⚙ HUD
+            </button>
+            <button
+              onClick={startPlayback}
+              className="flex items-center gap-2 px-3 py-1.5 rounded font-['Orbitron'] text-[0.58rem] tracking-[2px] font-bold cursor-pointer glass hud-corners"
+              style={{
+                background: isPlaybackMode ? "rgba(255,136,0,0.18)" : "rgba(255,136,0,0.07)",
+                border: `1px solid ${isPlaybackMode ? "rgba(255,136,0,0.7)" : "rgba(255,136,0,0.3)"}`,
+                color: "#ff8800",
+                transition: "all 0.18s ease",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,136,0,0.18)"; e.currentTarget.style.transform = "translateY(-1px)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = isPlaybackMode ? "rgba(255,136,0,0.18)" : "rgba(255,136,0,0.07)"; e.currentTarget.style.transform = "translateY(0)"; }}
+            >
+              ⏪ REWIND
             </button>
             <button
               onClick={() => setShowAbout(true)}
@@ -425,7 +475,7 @@ export default function Dashboard() {
 
         {/* ════ THREAT FEED TICKER ════ */}
         <motion.div variants={panelAnim} className="shrink-0">
-          <ThreatTicker logs={logs} />
+          <ThreatTicker logs={displayLogs} />
         </motion.div>
 
         {/* ════ MAIN BODY ════ */}
@@ -437,7 +487,7 @@ export default function Dashboard() {
             className="min-h-0 h-72 sm:h-80 lg:h-full min-w-0 order-2 lg:order-1 flex flex-col gap-2"
           >
             <div className="flex-1 min-h-0">
-              <LogsPanel logs={logs} />
+              <LogsPanel logs={displayLogs} />
             </div>
           </motion.div>
 
@@ -450,20 +500,24 @@ export default function Dashboard() {
             <div className="flex flex-col glass anim-flicker h-full overflow-hidden cyber-grid hud-corners">
               <div className="panel-title">
                 <span className="dot" />
-                <span>GLOBAL ATTACK MAP — LIVE</span>
+                <span>{isPlaybackMode ? "GLOBAL ATTACK MAP — PLAYBACK" : "GLOBAL ATTACK MAP — LIVE"}</span>
                 <span
                   className={`ml-auto text-[0.48rem] tracking-widest ${
-                    connected
+                    isPlaybackMode
+                      ? "text-orange-400 anim-blink"
+                      : connected
                       ? "text-green-400 anim-blink"
                       : "text-yellow-500 anim-blink"
                   }`}
                 >
-                  ● {connected ? "LIVE — DISTRIBUTION" : "LIVE — SIMULATED"}
+                  {isPlaybackMode
+                    ? `● PLAYBACK — ${pbIndex + 1}/${pbEvents.length}`
+                    : `● ${connected ? "LIVE — DISTRIBUTION" : "LIVE — SIMULATED"}`}
                 </span>
               </div>
               <div className="flex-1 relative overflow-hidden">
                 <Suspense fallback={<div className="w-full h-full" />}>
-                  <GlobeMap arcs={allArcs} />
+                  <GlobeMap arcs={displayArcs} />
                 </Suspense>
               </div>
             </div>
@@ -533,12 +587,12 @@ export default function Dashboard() {
           variants={panelAnim}
           className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[1fr_1fr_210px] gap-2 shrink-0 lg:h-44"
         >
-          <div id="section-threat-activity" className="h-52 lg:h-full">
+          <div id="section-threat-activity" className="h-72 lg:h-full">
             <Suspense fallback={<div className="w-full h-full" />}>
               <ThreatAreaChart data={chartData} />
             </Suspense>
           </div>
-          <div id="section-stats" className="h-52 lg:h-full">
+          <div id="section-stats" className="h-72 lg:h-full">
             <Suspense fallback={<div className="w-full h-full" />}>
               <AttackBarChart data={barData} />
             </Suspense>
@@ -586,6 +640,21 @@ export default function Dashboard() {
         rules={rules}
         toggleRule={toggleRule}
         setAllRules={setAllRules}
+      />
+
+      <PlaybackPanel
+        isPlaybackMode={isPlaybackMode}
+        isPlaying={isPlaying}
+        events={pbEvents}
+        index={pbIndex}
+        speed={pbSpeed}
+        loading={pbLoading}
+        error={pbError}
+        play={pbPlay}
+        pause={pbPause}
+        seek={pbSeek}
+        setSpeed={pbSetSpeed}
+        closePlayback={closePlayback}
       />
     </>
   );
